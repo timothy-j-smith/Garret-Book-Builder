@@ -16,7 +16,7 @@ The window title **Library - garret** means the library screen of the app named 
 
 `garret` is spelled with one t, in the Dock, in the folder names, and in the window title.
 
-Cursor and the Dock app are not connected while you write. Editing this folder does not change the Dock app. Writing in the app does not change this folder.
+Cursor and the Dock app are not connected while you write. Editing this folder does not change the Dock app. Writing in the app does not change this folder. How this folder receives updates is in [How the copies stay in sync](#how-the-copies-stay-in-sync).
 
 ## Where a book stays
 
@@ -181,6 +181,39 @@ To write on the Air:
 3. Copy a book into the Air’s `Documents/Books` folder only when that Air should have the same book. Copy the `.db` and its sibling files and folders, with garret closed.
 
 Copying the source folder copies the program’s recipe. It does not copy the books.
+
+## How the copies stay in sync
+
+Three copies of the program source are involved. Your books are a fourth place, and they stay outside this.
+
+1. **Fork.** [timothy-j-smith/Garret-Book-Builder](https://github.com/timothy-j-smith/Garret-Book-Builder) is your copy on GitHub. It began as a copy of [iuliandita/garret](https://github.com/iuliandita/garret). Commits you make, including `QUICK-START.md` and the Mac change in `scripts/run-app`, live on this fork.
+2. **Clone.** This folder, `/Users/timothy/Garret-Book-Builder`, is the clone. It is the copy on the Mac that Cursor edits.
+3. **Origin.** Origin is the name Git uses for your fork. `git push` sends commits from this folder to origin. `git pull` brings origin’s new commits into this folder.
+4. **Upstream.** Upstream is the name Git uses for `iuliandita/garret`, the original project. This Mac can read it. The push address for that remote is disabled, so a push from this folder goes to your fork.
+5. **Merge.** A merge combines the two histories into one. A file that exists only on your fork, such as `QUICK-START.md`, stays. A file that only the original project changed is brought in. When both sides have changed the same lines, the merge stops and the fork is left as it was.
+6. **The daily sync.** GitHub runs `.github/workflows/sync-upstream.yml` on your fork once a day, at 13:15 UTC. That job fetches upstream and merges `develop` into your fork. You can also start it by hand: open the Actions tab, choose **Sync upstream**, and run the workflow. A stopped merge shows up as a failed run. Your files remain on the fork.
+7. **Pull.** After the fork has those new commits, this folder still has the older copy until you run `git pull`. Uncommitted edits in the folder stay when they do not overlap the incoming commits. `Documents/Books` and the Dock app are outside Git, so this sync leaves your stories and `garret.app` where they are.
+8. **Push.** `git push` publishes commits from this folder to your fork. The original project stays as its author left it.
+
+```mermaid
+flowchart LR
+  upstream["iuliandita/garret upstream"]
+  origin["Your fork origin"]
+  local["This Mac folder"]
+  upstream -->|"merge once a day"| origin
+  origin -->|"git pull"| local
+  local -->|"git push"| origin
+```
+
+To bring upstream in before the daily run, from this folder:
+
+```sh
+git fetch upstream
+git merge upstream/develop
+git push origin develop
+```
+
+`git pull` is the step that updates this folder after the fork already has the new commits. If either command stops on an overlap, leave the files as they are and sort out the shared lines before you continue. `QUICK-START.md` is only on your fork, so a normal merge keeps it.
 
 ## What to hand to another agent
 

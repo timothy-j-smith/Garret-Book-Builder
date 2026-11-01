@@ -1,0 +1,42 @@
+name: Sync upstream
+
+# Merge iuliandita/garret develop into this fork.
+# A clean merge keeps files that exist only here, including QUICK-START.md.
+# If the same lines changed on both sides, the job stops and does not push.
+
+on:
+  schedule:
+    - cron: "15 13 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: develop
+          fetch-depth: 0
+      - name: Merge upstream develop
+        run: |
+          set -eu
+          git remote add upstream https://github.com/iuliandita/garret.git
+          git fetch upstream develop
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git merge upstream/develop --no-edit; then
+            git push origin HEAD:develop
+          else
+            echo "Sync stopped. The same lines changed in this fork and in iuliandita/garret."
+            echo "The fork was left unchanged."
+            git merge --abort
+            exit 1
+          fi
