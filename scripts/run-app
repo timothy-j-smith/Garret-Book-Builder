@@ -16,6 +16,12 @@ bin="$repo/app/shell-tauri/src-tauri/target/release/garret"
 # assumption it is current.
 (cd "$repo/app/ui" && bun run build)
 
+# Tauri lists ../dist as a bundle resource, resolved from src-tauri. The window
+# loads app/ui/dist at runtime. This copy only satisfies that compile-time path.
+# package-macos does the same copy before cargo build.
+mkdir -p "$repo/app/shell-tauri/dist"
+cp -R "$repo/app/ui/dist/." "$repo/app/shell-tauri/dist/"
+
 if [ ! -x "$bin" ]; then
   echo "building the host (first build takes a couple of minutes)" >&2
   (cd "$repo/app/shell-tauri/src-tauri" && cargo build --release)
